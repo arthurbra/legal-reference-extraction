@@ -162,7 +162,7 @@ class CaseRefExtractorMixin(object):
 
         return pattern
 
-    def extract_case_ref_markers(self, content: str) -> List[RefMarker]:
+    def extract_case_ref_markers(self, content: str, ignore_case: bool=False) -> List[RefMarker]:
         """
         BVerwG, Urteil vom 20. Februar 2013, - 10 C 23.12 -
         BVerwG, Urteil vom 27. April 2010 - 10 C 5.09 -
@@ -212,10 +212,14 @@ class CaseRefExtractorMixin(object):
         text = content
         marker_offset = 0
 
+        regex_flags = 0
+        if ignore_case:
+            regex_flags = re.IGNORECASE
+
         # TODO More intelligent by search only in sentences.
 
         # Find all file numbers
-        for match in re.finditer(self.get_file_number_regex(), content):  # type: Match
+        for match in re.finditer(self.get_file_number_regex(), content, flags=regex_flags):  # type: Match
             court = None
 
             # Search in surroundings for court names
@@ -232,7 +236,7 @@ class CaseRefExtractorMixin(object):
                 fn_pos = match.start(0) - start
                 candidates = collections.OrderedDict()
 
-                for court_match in re.finditer(self.get_court_name_regex(), surrounding):
+                for court_match in re.finditer(self.get_court_name_regex(), surrounding, flags=regex_flags):
                     candidate_pos = round((court_match.start(0) + court_match.end(0)) / 2)  # Position = center
                     candidate_dist = abs(fn_pos - candidate_pos)  # Distance to file number
 

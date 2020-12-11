@@ -25,7 +25,7 @@ class BaseRefExTest(TestCase):
     def assert_refs(self, fixtures, is_html: bool=False):
         for i, test in enumerate(fixtures):
             if 'resource' in test and 'content' not in test:
-                with open(os.path.join(self.resource_dir, test['resource'])) as f:
+                with open(os.path.join(self.resource_dir, test['resource']), encoding="utf-8") as f:
                     test['content'] = ''.join(f.readlines())
 
             new_content, markers = self.extractor.extract(test['content'], is_html)

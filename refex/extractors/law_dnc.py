@@ -37,7 +37,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
     # All text non-word symbols
     word_delimiter = '\s|\.|,|;|:|!|\?|\(|\)|\[|\]|"|\'|<|>|&'
 
-    def extract_law_ref_markers(self, content: str, is_html: bool=False) -> List[RefMarker]:
+    def extract_law_ref_markers(self, content: str, is_html: bool=False, ignore_case: bool=False) -> List[RefMarker]:
         """
 
         The main extraction method. Takes input content and returns content with markers and list of extracted references.
@@ -50,9 +50,13 @@ class DivideAndConquerLawRefExtractorMixin(object):
         :return: List of reference markers
         """
 
+        regex_flags = 0
+        if ignore_case:
+            regex_flags = re.IGNORECASE
+
         if self.law_book_context is not None:
             # Extraction with context available is done in another method
-            return self.extract_law_ref_markers_with_context(content)
+            return self.extract_law_ref_markers_with_context(content, regex_flags)
 
         # Init
         markers = []
@@ -84,7 +88,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
 
 
 
-        for marker_match in re.finditer(re.compile(multi_pattern), content):  # All matches
+        for marker_match in re.finditer(re.compile(multi_pattern, flags=regex_flags), content):  # All matches
             marker_text = marker_match.group(0)
             refs = []
             refs_waiting_for_book = []
@@ -94,7 +98,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
 
             # Books by position in text
             book_positions = {}  # Can we ensure that book_position is in order?
-            for book_match in re.finditer(book_pattern, marker_text):
+            for book_match in re.finditer(book_pattern, marker_text, flags=regex_flags):
                 book_positions[book_match.start()] = book_match.group(0)
 
             # We cannot work without knowing the book
@@ -112,7 +116,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
             pattern = '(?P<sep>' + sectionSign + sectionSign + '|,|;|und|bis)\s?(?P<sect>(' + a + '|' + b + '|' + c + '))'
 
 
-            for ref_match in re.finditer(re.compile(pattern), marker_text):
+            for ref_match in re.finditer(re.compile(pattern, flags=regex_flags), marker_text):
                 sect = ref_match.group('sect')
 
                 logger.debug('Found ref: %s' % ref_match.group())
@@ -181,7 +185,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
 
             # logger.debug('Pattern: %s' % pattern)
 
-            for marker_match in re.finditer(re.compile(pattern), content):  # All matches
+            for marker_match in re.finditer(re.compile(pattern, flags=re.IGNORECASE), content):  # All matches
                 marker_text = marker_match.group(0)
                 if 'book' in marker_match.groupdict():
                     book = Ref.clean_book(marker_match.group('book'))
@@ -280,7 +284,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
         # optional space + roman numbers (e.g. SGB IX)
         return '([A-ZÄÜÖ][-ÄÜÖäüöA-Za-z]{,20})(V|G|O|B)(?:\s([XIV]{1,5}))?'
 
-    def extract_law_ref_markers_with_context(self, content):
+    def extract_law_ref_markers_with_context(self, content, regex_flags):
         """
         With context = citing law book is known
 
@@ -335,7 +339,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
         for p in patterns:
             regex = p['pattern']
 
-            res = re.finditer(regex, search_text)  # flags
+            res = re.finditer(regex, search_text, flags=regex_flags)  # flags
 
             for ref_m in res:
                 ref_text = ref_m.group(0)

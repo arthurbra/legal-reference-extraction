@@ -64,6 +64,15 @@ class LawRefExTest(BaseRefExTest):
         self.assertEqual(1, len(markers), 'Invalid marker count')
         self.assertEqual('20', markers[0].references[0].section, 'Invalid section')
 
+    def extract_ignore_case(self, text):
+        content, markers = self.extractor.extract(text, ignore_case=True)
+        return [m.text for m in markers]
+
+    def test_ignore_case(self):
+        self.assertEqual(['§ 5 abs. 1 bgb'], self.extract_ignore_case('sonderzahlung § 5 abs. 1 bgb kündigung'))
+        self.assertEqual(['§ 92 betrvg'], self.extract_ignore_case('kündigung § 92 betrvg personalplanung'))
+
+
     # def test_handle_multiple_law_refs(self):
     #     ref_str = '§§ 10000 Abs. 3 ZPO, 151, 153 VwGO'
     #

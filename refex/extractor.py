@@ -44,7 +44,7 @@ class RefExtractor(DivideAndConquerLawRefExtractorMixin, CaseRefExtractorMixin):
 
         return content_with_markers
 
-    def extract(self, content_html: str, is_html: bool=False):
+    def extract(self, content_html: str, is_html: bool=False, ignore_case: bool=False):
 
         reference_markers = []  # type: List[RefMarker]
 
@@ -52,13 +52,13 @@ class RefExtractor(DivideAndConquerLawRefExtractorMixin, CaseRefExtractorMixin):
         content = self.remove_markers(content_html)
 
         if self.do_law_refs:
-            markers = self.extract_law_ref_markers(content, is_html)
+            markers = self.extract_law_ref_markers(content, is_html, ignore_case)
             reference_markers.extend(markers)
 
             logger.debug('Extracted law ref markers: %i' % len(markers))
 
         if self.do_case_refs:
-            markers = self.extract_case_ref_markers(content)
+            markers = self.extract_case_ref_markers(content, ignore_case)
             reference_markers.extend(markers)
 
             logger.debug('Extracted case ref markers: %i' % len(markers))
