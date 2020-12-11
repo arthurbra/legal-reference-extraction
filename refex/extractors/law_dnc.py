@@ -185,7 +185,7 @@ class DivideAndConquerLawRefExtractorMixin(object):
 
             # logger.debug('Pattern: %s' % pattern)
 
-            for marker_match in re.finditer(re.compile(pattern, flags=re.IGNORECASE), content):  # All matches
+            for marker_match in re.finditer(re.compile(pattern, flags=regex_flags), content):  # All matches
                 marker_text = marker_match.group(0)
                 if 'book' in marker_match.groupdict():
                     book = Ref.clean_book(marker_match.group('book'))
